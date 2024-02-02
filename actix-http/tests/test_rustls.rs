@@ -1,6 +1,6 @@
-#![cfg(feature = "rustls-0_21")]
+#![cfg(feature = "rustls-0_22")]
 
-extern crate tls_rustls_021 as rustls;
+extern crate tls_rustls_022 as rustls;
 
 use std::{
     convert::Infallible,
@@ -109,7 +109,7 @@ async fn h1() -> io::Result<()> {
     let srv = test_server(move || {
         HttpService::build()
             .h1(|_| ok::<_, Error>(Response::ok()))
-            .rustls_021(tls_config())
+            .rustls_022(tls_config())
     })
     .await;
 
@@ -123,7 +123,7 @@ async fn h2() -> io::Result<()> {
     let srv = test_server(move || {
         HttpService::build()
             .h2(|_| ok::<_, Error>(Response::ok()))
-            .rustls_021(tls_config())
+            .rustls_022(tls_config())
     })
     .await;
 
@@ -141,7 +141,7 @@ async fn h1_1() -> io::Result<()> {
                 assert_eq!(req.version(), Version::HTTP_11);
                 ok::<_, Error>(Response::ok())
             })
-            .rustls_021(tls_config())
+            .rustls_022(tls_config())
     })
     .await;
 
@@ -159,7 +159,7 @@ async fn h2_1() -> io::Result<()> {
                 assert_eq!(req.version(), Version::HTTP_2);
                 ok::<_, Error>(Response::ok())
             })
-            .rustls_021_with_config(
+            .rustls_022_with_config(
                 tls_config(),
                 TlsAcceptorConfig::default().handshake_timeout(Duration::from_secs(5)),
             )
@@ -180,7 +180,7 @@ async fn h2_body1() -> io::Result<()> {
                 let body = load_body(req.take_payload()).await?;
                 Ok::<_, Error>(Response::ok().set_body(body))
             })
-            .rustls_021(tls_config())
+            .rustls_022(tls_config())
     })
     .await;
 
@@ -206,7 +206,7 @@ async fn h2_content_length() {
                 ];
                 ok::<_, Infallible>(Response::new(statuses[indx]))
             })
-            .rustls_021(tls_config())
+            .rustls_022(tls_config())
     })
     .await;
 
@@ -278,7 +278,7 @@ async fn h2_headers() {
                 }
                 ok::<_, Infallible>(config.body(data.clone()))
             })
-            .rustls_021(tls_config())
+            .rustls_022(tls_config())
     })
     .await;
 
@@ -317,7 +317,7 @@ async fn h2_body2() {
     let mut srv = test_server(move || {
         HttpService::build()
             .h2(|_| ok::<_, Infallible>(Response::ok().set_body(STR)))
-            .rustls_021(tls_config())
+            .rustls_022(tls_config())
     })
     .await;
 
@@ -334,7 +334,7 @@ async fn h2_head_empty() {
     let mut srv = test_server(move || {
         HttpService::build()
             .finish(|_| ok::<_, Infallible>(Response::ok().set_body(STR)))
-            .rustls_021(tls_config())
+            .rustls_022(tls_config())
     })
     .await;
 
@@ -360,7 +360,7 @@ async fn h2_head_binary() {
     let mut srv = test_server(move || {
         HttpService::build()
             .h2(|_| ok::<_, Infallible>(Response::ok().set_body(STR)))
-            .rustls_021(tls_config())
+            .rustls_022(tls_config())
     })
     .await;
 
@@ -385,7 +385,7 @@ async fn h2_head_binary2() {
     let srv = test_server(move || {
         HttpService::build()
             .h2(|_| ok::<_, Infallible>(Response::ok().set_body(STR)))
-            .rustls_021(tls_config())
+            .rustls_022(tls_config())
     })
     .await;
 
@@ -411,7 +411,7 @@ async fn h2_body_length() {
                     Response::ok().set_body(SizedStream::new(STR.len() as u64, body)),
                 )
             })
-            .rustls_021(tls_config())
+            .rustls_022(tls_config())
     })
     .await;
 
@@ -435,7 +435,7 @@ async fn h2_body_chunked_explicit() {
                         .body(BodyStream::new(body)),
                 )
             })
-            .rustls_021(tls_config())
+            .rustls_022(tls_config())
     })
     .await;
 
@@ -464,7 +464,7 @@ async fn h2_response_http_error_handling() {
                     )
                 }))
             }))
-            .rustls_021(tls_config())
+            .rustls_022(tls_config())
     })
     .await;
 
@@ -494,7 +494,7 @@ async fn h2_service_error() {
     let mut srv = test_server(move || {
         HttpService::build()
             .h2(|_| err::<Response<BoxBody>, _>(BadRequest))
-            .rustls_021(tls_config())
+            .rustls_022(tls_config())
     })
     .await;
 
@@ -511,7 +511,7 @@ async fn h1_service_error() {
     let mut srv = test_server(move || {
         HttpService::build()
             .h1(|_| err::<Response<BoxBody>, _>(BadRequest))
-            .rustls_021(tls_config())
+            .rustls_022(tls_config())
     })
     .await;
 
@@ -534,7 +534,7 @@ async fn alpn_h1() -> io::Result<()> {
         config.alpn_protocols.push(CUSTOM_ALPN_PROTOCOL.to_vec());
         HttpService::build()
             .h1(|_| ok::<_, Error>(Response::ok()))
-            .rustls_021(config)
+            .rustls_022(config)
     })
     .await;
 
@@ -556,7 +556,7 @@ async fn alpn_h2() -> io::Result<()> {
         config.alpn_protocols.push(CUSTOM_ALPN_PROTOCOL.to_vec());
         HttpService::build()
             .h2(|_| ok::<_, Error>(Response::ok()))
-            .rustls_021(config)
+            .rustls_022(config)
     })
     .await;
 
@@ -582,7 +582,7 @@ async fn alpn_h2_1() -> io::Result<()> {
         config.alpn_protocols.push(CUSTOM_ALPN_PROTOCOL.to_vec());
         HttpService::build()
             .finish(|_| ok::<_, Error>(Response::ok()))
-            .rustls_021(config)
+            .rustls_022(config)
     })
     .await;
 

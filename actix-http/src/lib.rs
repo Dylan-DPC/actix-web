@@ -28,7 +28,7 @@
 #![doc(html_favicon_url = "https://actix.rs/favicon.ico")]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
-pub use ::http::{uri, uri::Uri, Method, StatusCode, Version};
+pub use http::{uri, uri::Uri, Method, StatusCode, Version};
 
 pub mod body;
 mod builder;
@@ -58,7 +58,12 @@ pub mod ws;
 
 #[allow(deprecated)]
 pub use self::payload::PayloadStream;
-#[cfg(any(feature = "openssl", feature = "rustls-0_20", feature = "rustls-0_21"))]
+#[cfg(any(
+    feature = "openssl",
+    feature = "rustls-0_20",
+    feature = "rustls-0_22-webpki-roots",
+    feature = "rustls-0_22-native-roots",
+))]
 pub use self::service::TlsAcceptorConfig;
 pub use self::{
     builder::HttpServiceBuilder,

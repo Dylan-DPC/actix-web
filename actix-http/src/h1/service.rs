@@ -274,6 +274,70 @@ mod rustls_021 {
     }
 }
 
+#[cfg(any(
+    feature = "rustls-0_22-webpki-roots",
+    feature = "rustls-0_22-native-roots",
+))]
+mod rustls_022 {
+    use std::io;
+
+    use actix_service::ServiceFactoryExt as _;
+    use actix_tls::accept::{
+        rustls_0_22::{reexports::ServerConfig, Acceptor, TlsStream},
+        TlsError,
+    };
+
+    use super::*;
+
+    impl<S, B, X, U> H1Service<TlsStream<TcpStream>, S, B, X, U>
+    where
+        S: ServiceFactory<Request, Config = ()>,
+        S::Future: 'static,
+        S::Error: Into<Response<BoxBody>>,
+        S::InitError: fmt::Debug,
+        S::Response: Into<Response<B>>,
+
+        B: MessageBody,
+
+        X: ServiceFactory<Request, Config = (), Response = Request>,
+        X::Future: 'static,
+        X::Error: Into<Response<BoxBody>>,
+        X::InitError: fmt::Debug,
+
+        U: ServiceFactory<
+            (Request, Framed<TlsStream<TcpStream>, Codec>),
+            Config = (),
+            Response = (),
+        >,
+        U::Future: 'static,
+        U::Error: fmt::Display + Into<Response<BoxBody>>,
+        U::InitError: fmt::Debug,
+    {
+        /// Create Rustls v0.22 based service.
+        pub fn rustls_022(
+            self,
+            config: ServerConfig,
+        ) -> impl ServiceFactory<
+            TcpStream,
+            Config = (),
+            Response = (),
+            Error = TlsError<io::Error, DispatchError>,
+            InitError = (),
+        > {
+            Acceptor::new(config)
+                .map_init_err(|_| {
+                    unreachable!("TLS acceptor service factory does not error on init")
+                })
+                .map_err(TlsError::into_service_error)
+                .map(|io: TlsStream<TcpStream>| {
+                    let peer_addr = io.get_ref().0.peer_addr().ok();
+                    (io, peer_addr)
+                })
+                .and_then(self.map_err(TlsError::Service))
+        }
+    }
+}
+
 impl<T, S, B, X, U> H1Service<T, S, B, X, U>
 where
     S: ServiceFactory<Request, Config = ()>,
